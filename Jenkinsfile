@@ -34,7 +34,7 @@ pipeline {
             steps {
                 echo 'deploying application...'
                 script {
-                    def dockerCmd = 'docker run -p 8080:8080 -d kelzceana/java-maven-app:1.0'
+                    def dockerCmd = 'docker run -p 8080:8080 -d kelzceana/java-app:1.1'
                     sshagent(['ec2-server-key']) {
                     sh "ssh -o StrictHostKeyChecking=no ec2-user@3.91.234.236 ${dockerCmd}"
                     }                                  

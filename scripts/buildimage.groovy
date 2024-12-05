@@ -4,9 +4,9 @@ def execute() {
                                       passwordVariable: 'PASS',
                                       usernameVariable: 'USER')]) {
         sh '''
-                docker build -t kelzceana/java-maven-app:1.0 .
+                docker build -t kelzceana/java-app:1.1 .
                 echo $PASS | docker login -u $USER --password-stdin
-                docker push kelzceana/java-maven-app:1.0
+                docker push kelzceana/java-app:1.1
                 '''
                                                   }
 }

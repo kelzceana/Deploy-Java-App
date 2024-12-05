@@ -1,41 +1,54 @@
-def gv
-
-pipeline {   
+def COLOR_MAP = [
+    'SUCCESS': 'good',
+    'FAILURE': 'danger'
+]
+pipeline {
     agent any
     tools {
-        maven 'Maven'
+        maven 'maven3.9'
     }
     stages {
-        stage("init") {
+        stage('Init') {
             steps {
                 script {
-                    gv = load "script.groovy"
+                    buildimage = load 'scripts/buildimage.groovy'
+                    buildjar = load 'scripts/buildjar.groovy'
                 }
             }
         }
-        stage("build jar") {
+        stage('Build Jar') {
             steps {
                 script {
-                    gv.buildJar()
-
+                    buildjar.execute()
                 }
             }
         }
-
-        stage("build image") {
+        stage('Build image') {
             steps {
                 script {
-                    gv.buildImage()
+                    buildimage.execute()
                 }
             }
         }
-
-        stage("deploy") {
+        stage('Deploy') {
             steps {
+                echo 'deploying application...'
                 script {
-                    gv.deployApp()
+                    def dockerCmd = 'docker run -p 8080:8080 -d kelzceana/java-maven-app:1.0'
+                    sshagent(['ec2-server-key']) {
+                    sh "ssh -o StrictHostKeyChecking=no ec2-user@3.91.150.22 ${dockerCmd}"
+                    }                                  
                 }
             }
-        }               
+        }
     }
-} 
+    post {
+        always {
+            slackSend(
+                channel: '#automation-builds',
+                color: COLOR_MAP[currentBuild.currentResult],
+                message: "Build ${env.BUILD_NUMBER} was ${currentBuild.currentResult}. More details at ${env.BUILD_URL}"
+            )
+        }
+    }
+}
